@@ -1,0 +1,120 @@
+
+### Clear Stale Docker Network State / network interfaces
+sudo systemctl stop docker
+sudo systemctl stop docker.socket
+sudo rm -rf /var/lib/docker/network/
+
+
+
+
+
+### start dokcer 
+sudo systemctl start dokcer 
+
+### voir les status du docker 
+sudo systemctl status dokcer
+
+## run docker 
+docker pull ubuntu 
+docker run -it ubuntu
+
+### zookeeper kafka : 
+ZooKeeper est un système centralisé de gestion de la configuration et de coordination des services distribués. Il est utilisé principalement pour gérer et coordonner les applications distribuées. Dans le cas de Kafka, ZooKeeper est nécessaire pour gérer les brokers Kafka, suivre les partitions et les leaders de partitions, ainsi que pour garantir la synchronisation des clusters Kafka.
+
+En résumé, ZooKeeper assure le bon fonctionnement de Kafka en :
+
+Gérant l'état de l'ensemble du cluster.
+Coordonner les actions entre les différents serveurs (brokers) Kafka.
+Suivre l'état des partitions et de leurs leaders.
+Kafka utilise ZooKeeper pour plusieurs fonctions internes, bien que de plus en plus de versions récentes de Kafka tentent de réduire cette dépendance avec KRaft (Kafka Raft).
+
+Tu configures ZooKeeper avant d'installer Kafka car Kafka en a besoin pour fonctionner correctement.
+
+
+##kafka wget 
+
+wget https://downloads.apache.org/kafka/3.9.0/kafka_2.13-3.9.0.tgz
+
+### demarrer un ZooKeeper : 
+cd /opt/kafka_2.13-3.3.1
+
+bin/zookeeper-server-start.sh config/zookeeper.properties
+
+###demarrer kafka : 
+bin/kafka-server-start.sh config/server.properties
+
+
+###creer installation de kafka : 
+bin/kafka-topics.sh --create --topic test --bootstrap-server localhost:9092 --partitions 1 --replication-factor 1
+
+###liste les sujet 
+bin/kafka-topics.sh --list --bootstrap-server localhost:9092
+
+
+### envoyer un msg Producer : 
+bin/kafka-console-producer.sh --topic test --bootstrap-server localhost:9092
+
+### consommer un msg consumer: 
+bin/kafka-console-consumer.sh --topic test --from-beginning --bootstrap-server localhost:9092
+
+
+
+
+###show list
+kafka-topics --list --bootstrap-server localhost:9092
+
+
+###lestining prot :
+netstat -tuln | grep -E '2181|9092'
+
+
+###Kafka Connector for Spark
+spark-submit --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.0 streaming_test.py
+
+spark-submit --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.0,org.mongodb.spark:mongo-spark-connector_2.12:10.3.0,com.datastax.spark:spark-cassandra-connector_2.12:3.4.1 app/streaming.py
+
+#### CReation de keyspace in cassandra :
+CREATE KEYSPACE IF NOT EXISTS random_user_keyspace 
+WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 1};
+### utilisation de keyspace : 
+USE random_user_keyspace;
+
+
+### creation du table random_user_table: 
+CREATE TABLE random_user_table (
+    user_id text,
+    ingestion_time timestamp,
+    gender text,
+    full_name text,
+    country text,
+    age int,
+    email text,
+    phone text,
+    nationality text,
+    PRIMARY KEY (user_id, ingestion_time)
+) WITH CLUSTERING ORDER BY (ingestion_time DESC);
+
+### creation du table country_stats 
+CREATE TABLE country_stats (
+    country text PRIMARY KEY,
+    count_users bigint,
+    avg_age double,
+    last_update timestamp
+);
+
+### assurer que cassandra fonction bien 
+/usr/local/cassandra/bin/nodetool status
+
+ netstat -tuln | grep 9042
+
+###DEmarer mongodb 
+/usr/local/bin/mongod --fork --logpath /var/log/mongodb.log
+## verification
+mongosh mongodb://localhost:27017
+ps aux | grep mongod
+
+
+### pour acceder a mongodb
+mongosh mongodb://localhost:27017
+use user_db
+db.raw_users.find()
